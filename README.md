@@ -1,6 +1,6 @@
 Input format:
-first string - parent
-second string - children
+first string - parent</br>
+second string - children</br>
 
 e.g.
 
@@ -12,24 +12,14 @@ e.g.
                   |                        |
                   9                       cya
 
-must be:
-
-8
-
-bar baz
-
-bar
-
-3.5 20 str
-
-3.5
-
-9
-
-baz
-
-foo bye
-
-bye
-
-cya
+must be:</br>
+8</br>
+bar baz</br>
+bar</br>
+3.5 20 str</br>
+3.5</br>
+9</br>
+baz</br>
+foo bye</br>
+bye</br>
+cya</br>
