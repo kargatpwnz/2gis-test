@@ -13,13 +13,23 @@ e.g.
                   9                       cya
 
 must be:
+
 8
+
 bar baz
+
 bar
+
 3.5 20 str
+
 3.5
+
 9
+
 baz
+
 foo bye
+
 bye
+
 cya
