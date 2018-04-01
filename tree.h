@@ -45,11 +45,9 @@ class Tree {
   void Test();
   void PrintTree();
   void Serialize(std::ofstream &stream);
-
   void Serialize(std::ofstream &stream, TreeNode *root);
 
   void Deserialize(std::ifstream &stream);
-  void Deserialize(std::ifstream &stream, TreeNode *root);
 
  private:
   void Print(TreeNode *root, int level);

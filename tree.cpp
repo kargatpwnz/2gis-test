@@ -73,10 +73,6 @@ void Tree::Serialize(std::ofstream &stream, TreeNode *root) {
 }
 
 void Tree::Deserialize(std::ifstream &stream) {
-  Deserialize(stream, root_);
-}
-
-void Tree::Deserialize(std::ifstream &stream, TreeNode *root) {
   std::string parent;
   std::string children;
 
