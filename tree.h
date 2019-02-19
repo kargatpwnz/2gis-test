@@ -1,5 +1,4 @@
-#ifndef TWO_GIS_TREE_H_
-#define TWO_GIS_TREE_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -61,4 +60,3 @@ class Tree {
   std::map<class TreeNode *, std::vector<class TreeNode *>> parent_children_map_;
 };
 
-#endif //TWO_GIS_TREE_H_
