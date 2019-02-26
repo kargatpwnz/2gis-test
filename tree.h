@@ -1,62 +1,51 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include <map>
+#include <memory>
+#include <string>
+#include <variant>
+#include <vector>
 
 class TreeNode {
  public:
-  union {
-    std::string string_value;
-    double double_value;
-    int int_value;
-  };
+  std::variant<int, double, std::string> value;
 
-  bool IsInt = false;
-  bool IsDouble = false;
-  bool IsString = false;
+  std::vector<std::unique_ptr<TreeNode>> children;
 
-  std::vector<class TreeNode*> children;
+  explicit TreeNode(std::string string_value) : value(std::move(string_value)) {}
 
-  TreeNode(std::string string_value) : string_value(std::move(string_value)) {
-    IsString = true;
-  }
+  explicit TreeNode(double double_value) : value(double_value) {}
 
-  TreeNode(double double_value) : double_value(double_value) {
-    IsDouble = true;
+  explicit TreeNode(int int_value) : value(int_value) {}
 
-  }
+  static bool CompareNodes(const std::unique_ptr<TreeNode> &lhs, const std::unique_ptr<TreeNode> &rhs);
 
-  TreeNode(int int_value) : int_value(int_value) {
-    IsInt = true;
-  }
+  static TreeNode *StringToNode(const std::string &str);
+  static std::vector<std::unique_ptr<TreeNode>> ParseChildren(const std::string &str);
 
-  virtual ~TreeNode() {
-
-  }
+  ~TreeNode() = default;
 };
 
 class Tree {
  public:
-  Tree();
-  virtual ~Tree();
+  Tree() = default;
+  ~Tree() = default;
 
   void Test();
-  void PrintTree();
-  void Serialize(std::ofstream &stream);
-  void Serialize(std::ofstream &stream, TreeNode *root);
-
-  void Deserialize(std::ifstream &stream);
+  void PrintTree() const;
+  void Serialize(std::ostream &stream);
+  void Deserialize(std::istream &stream);
 
  private:
-  void Print(TreeNode *root, int level);
+  void Serialize(std::ostream &stream, const std::unique_ptr<TreeNode> &root);
+  void Print(const std::unique_ptr<TreeNode> &root, int level) const;
   void MapToTree();
-  void OutputValueToStream(std::ofstream &stream, TreeNode *root);
-  void PrintValue(TreeNode *root);
-  bool CompareNodes(TreeNode *node1, TreeNode *node2);
-  void Dfs(TreeNode *root);
+  void OutputValueToStream(std::ostream &stream, const std::unique_ptr<TreeNode> &root) const;
+  //void PrintValue(const std::unique_ptr<TreeNode> &root) const;
+  void Dfs(const std::unique_ptr<TreeNode> &root);
 
-  TreeNode *root_;
-  std::map<class TreeNode *, std::vector<class TreeNode *>> parent_children_map_;
+  std::unique_ptr<TreeNode> root_;
+
+  //std::map<std::unique_ptr<TreeNode>, std::vector<std::unique_ptr<TreeNode>>> parent_children_map_;
 };
 
