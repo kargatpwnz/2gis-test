@@ -47,34 +47,31 @@ void Tree::Serialize(std::ostream &stream) {
   Serialize(stream, root_);
 }
 
-void Tree::Serialize(std::ostream &stream, const node_ptr &root) {
-  if (root == nullptr) {
-    stream << "nullptr";
+void Tree::Serialize(std::ostream &oss, const node_ptr &root) {
+  if (!root) {
+    oss << "nullptr";
     return;
   }
 
-  OutputValueToStream(stream, root);
-  stream << std::endl;
+  OutputValueToStream(oss, root);
 
   for (auto &x : root->children) {
-    OutputValueToStream(stream, x);
-    stream << " ";
+    OutputValueToStream(oss, x);
+    oss << " ";
   }
-  stream << std::endl;
 
   for (auto &x : root->children)
-    Serialize(stream, x);
-
+    Serialize(oss, x);
 }
 
-void Tree::Deserialize(std::istream &stream) {
+void Tree::Deserialize(std::istream &iss) {
   std::string parent;
   std::string children;
 
   // First string - parent
   // Second string - children
   std::queue<TreeNode *> queue;
-  while (getline(stream, parent)) {
+  while (getline(iss, parent)) {
     boost::trim(parent);
 
     auto data = TreeNode::ParseString(parent);
@@ -90,7 +87,7 @@ void Tree::Deserialize(std::istream &stream) {
         throw std::runtime_error("error while doing BFS");
     }
 
-    getline(stream, children);
+    getline(iss, children);
     boost::trim(children);
 
     if (children.empty())
@@ -105,8 +102,8 @@ void Tree::Deserialize(std::istream &stream) {
   }
 }
 
-void Tree::OutputValueToStream(std::ostream &stream, const node_ptr &root) const {
-  std::visit([&stream](auto &&arg) { stream << arg << std::endl; }, root->value);
+void Tree::OutputValueToStream(std::ostream &oss, const node_ptr &root) const {
+  std::visit([&oss](auto &arg) { oss << arg << std::endl; }, root->value);
 }
 
 std::vector<node_ptr> TreeNode::ParseChildren(const std::string &str) {
@@ -124,7 +121,7 @@ std::vector<node_ptr> TreeNode::ParseChildren(const std::string &str) {
 
   return result;
 }
-std::variant<int, double, std::string> TreeNode::ParseString(std::string &str) {
+data_t TreeNode::ParseString(std::string &str) {
   try {
     std::size_t pos = 0;
     int v = std::stoi(str, &pos);
