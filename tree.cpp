@@ -1,4 +1,6 @@
+#include <memory>
 #include <iostream>
+#include <queue>
 #include <fstream>
 #include <stdexcept>
 #include <memory>
@@ -11,7 +13,7 @@ void Tree::PrintTree() const {
   Print(root_, 0);
 }
 
-void Tree::Print(const std::unique_ptr<TreeNode> &root, int level) const {
+void Tree::Print(const node_ptr &root, int level) const {
   for (int i = 0; i < level; ++i)
     std::cout << "\t";
 //  PrintValue(root);
@@ -45,7 +47,7 @@ void Tree::Serialize(std::ostream &stream) {
   Serialize(stream, root_);
 }
 
-void Tree::Serialize(std::ostream &stream, const std::unique_ptr<TreeNode> &root) {
+void Tree::Serialize(std::ostream &stream, const node_ptr &root) {
   if (root == nullptr) {
     stream << "nullptr";
     return;
@@ -71,93 +73,70 @@ void Tree::Deserialize(std::istream &stream) {
 
   // First string - parent
   // Second string - children
-  getline(stream, parent);
-  boost::trim(parent);
-
-  if (parent.empty()) {
-    std::cerr << "File is empty" << std::endl;
-    return;
-  }
-  root_ = std::unique_ptr<TreeNode>(TreeNode::StringToNode(parent));
-  getline(stream, children);
-  root_->children = std::move(TreeNode::ParseChildren(children));
-
-  std::unordered_map<std::unique_ptr<TreeNode>, std::vector<std::unique_ptr<TreeNode>>> all_nodes;
+  std::queue<TreeNode *> queue;
   while (getline(stream, parent)) {
-    getline(stream, children);
-
     boost::trim(parent);
+
+    auto data = TreeNode::ParseString(parent);
+    if (queue.empty()) {
+      root_ = std::make_unique<TreeNode>(TreeNode::ParseString(parent));
+      queue.push(root_.get());
+    } else {
+      for (; !queue.empty(); queue.pop())
+        if (queue.front()->value == data)
+          break;
+
+      if (queue.empty())
+        throw std::runtime_error("error while doing BFS");
+    }
+
+    getline(stream, children);
     boost::trim(children);
 
-    all_nodes[std::make_unique<TreeNode>(parent)] = std::move(TreeNode::ParseChildren(children));
-  }
+    if (children.empty())
+      continue;
 
-  // TODO: find a way to restore nodes from map
-  for (auto &&child : root_->children) {
-    //child->children = std::move(all_nodes[child]);
+    queue.front()->children = TreeNode::ParseChildren(children);
+    for (const auto &child : queue.front()->children) {
+      queue.push(child.get());
+    }
 
+    queue.pop();
   }
-  MapToTree();
 }
 
-void Tree::MapToTree() {
-  // In the map begin stored root of tree, because map isn't sorted
-  // so I'm able to get first element in map as root
-
-//  auto it = parent_children_map_.begin();
-//  root_ = std::make_unique<TreeNode>(it->first);
-//  root_->children = it->second;
-//  parent_children_map_.erase(it);
-//
-//   Starting dfs and restoring tree
-//  Dfs(root_);
-}
-
-void Tree::OutputValueToStream(std::ostream &stream, const std::unique_ptr<TreeNode> &root) const {
+void Tree::OutputValueToStream(std::ostream &stream, const node_ptr &root) const {
   std::visit([&stream](auto &&arg) { stream << arg << std::endl; }, root->value);
 }
 
-//void Tree::PrintValue(const std::unique_ptr<TreeNode> &root) const {
-//  std::visit([](auto&& arg) {std::cout << arg << std::endl;}, root->value);
-//}
-
-void Tree::Dfs(const std::unique_ptr<TreeNode> &root) {
-//  for (auto &x : parent_children_map_) {
-//    if (TreeNode::CompareNodes(x.first, root))
-//      root->children = x.second;
-//  }
-//
-//  for (auto &x : root->children) {
-//    Dfs(x);
-//  }
-}
-
-bool TreeNode::CompareNodes(const std::unique_ptr<TreeNode> &lhs, const std::unique_ptr<TreeNode> &rhs) {
-  return lhs->value == rhs->value;
-}
-
-TreeNode *TreeNode::StringToNode(const std::string &str) {
-  try {
-    double value = std::stod(str);
-//      key_node = new TreeNode(value);
-    return new TreeNode(value);
-  } catch (const std::invalid_argument &e) {
-    return new TreeNode(str);
-  }
-}
-
-std::vector<std::unique_ptr<TreeNode>> TreeNode::ParseChildren(const std::string &str) {
-  std::vector<std::unique_ptr<TreeNode>> result;
+std::vector<node_ptr> TreeNode::ParseChildren(const std::string &str) {
+  std::vector<node_ptr> result;
 
   std::vector<std::string> split_values;
   boost::split(split_values, str, boost::algorithm::is_any_of(" "), boost::algorithm::token_compress_on);
   result.reserve(split_values.size());
   // Add children to parent key
-  for (const auto &str_value : split_values) {
+  for (auto &str_value : split_values) {
     if (str_value.empty())
       continue;
-    result.push_back(std::move(std::unique_ptr<TreeNode>(TreeNode::StringToNode(str_value))));
+    result.push_back(std::make_unique<TreeNode>(TreeNode::ParseString(str_value)));
   }
 
   return result;
+}
+std::variant<int, double, std::string> TreeNode::ParseString(std::string &str) {
+  try {
+    std::size_t pos = 0;
+    int v = std::stoi(str, &pos);
+    if (pos == str.size())
+      return v;
+  } catch (...) {}
+  try {
+    std::size_t pos = 0;
+    double v = std::stod(str, &pos);
+    if (pos == str.size())
+      return v;
+  } catch (...) {}
+
+  return std::move(str);
 }
