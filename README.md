@@ -17,9 +17,21 @@ must be:</br>
 bar baz</br>
 bar</br>
 3.5 20 str</br>
-3.5</br>
-9</br>
 baz</br>
 foo bye</br>
+3.5</br>
+9</br>
 bye</br>
 cya</br>
+
+also input file must followed by BFS rules like in example above</br>
+for example:</br>
+8</br>
+bar baz</br>
+next step is to describe every child of "8" node:</br>
+bar</br>
+3.5 20 str</br>
+baz</br>
+foo bye</br>
+
+and so on
